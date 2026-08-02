@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 
 import { useAuth } from '@/lib/auth';
-import { getGroupBalances } from '@/lib/api/balances';
+import { getFormerParticipantNames, getGroupBalances } from '@/lib/api/balances';
 import { recordSettlement } from '@/lib/api/settlements';
 import { getGroup, type GroupDetail } from '@/lib/api/groups';
 import { listExpenses, type ExpenseListItem } from '@/lib/api/expenses';
@@ -33,6 +33,7 @@ export default function GroupScreen() {
   const [group, setGroup] = useState<GroupDetail | null>(null);
   const [expenses, setExpenses] = useState<ExpenseListItem[]>([]);
   const [balances, setBalances] = useState<Balance[]>([]);
+  const [formerNames, setFormerNames] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [showSettled, setShowSettled] = useState(false);
@@ -51,6 +52,13 @@ export default function GroupScreen() {
       setGroup(g);
       setExpenses(xs);
       setBalances(bs);
+
+      // Balances include anyone with history here, so some may no longer be on
+      // the roster. Resolve what names we're allowed to see for those.
+      const roster = new Set(g.members.map((m) => m.user_id));
+      const strangers = bs.map((b) => b.userId).filter((uid) => !roster.has(uid));
+      setFormerNames(strangers.length ? await getFormerParticipantNames(strangers) : {});
+
       // Opening a group makes it the target of the home-screen shortcut.
       setRecentGroup({ id: g.id, name: g.name });
     } catch (e) {
@@ -100,9 +108,12 @@ export default function GroupScreen() {
     (userId: string) => {
       if (userId === myId) return 'You';
       const m = group?.members.find((x) => x.user_id === userId);
-      return m?.profile?.name || m?.profile?.email || 'Member';
+      if (m) return m.profile?.name || m.profile?.email || 'Member';
+      // Not on the roster: they left or deleted their account but still have a
+      // position in the ledger.
+      return formerNames[userId] ?? 'Former member';
     },
-    [group, myId],
+    [group, myId, formerNames],
   );
 
   function confirmSettle(t: { from: string; to: string; cents: number }) {

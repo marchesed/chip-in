@@ -212,6 +212,31 @@ export async function removeGroupImage(groupId: string): Promise<void> {
   if (path) await supabase.storage.from(IMAGE_BUCKET).remove([path]);
 }
 
+/**
+ * Leave a group. Refuses while the caller has a non-zero balance: their
+ * expenses stay behind but they'd vanish from the group's accounting, leaving
+ * the others owing money to nobody.
+ *
+ * Deletes the group too if they were the last member.
+ */
+export async function leaveGroup(groupId: string): Promise<void> {
+  const { error } = await supabase.rpc('leave_group', { p_group_id: groupId });
+  if (!error) return;
+
+  const outstanding = error.message.match(/outstanding_balance:(-?\d+)/);
+  if (outstanding) {
+    const cents = Math.abs(Number(outstanding[1]));
+    const owed = Number(outstanding[1]) > 0;
+    throw new Error(
+      `Settle up first — ${owed ? "you're owed" : 'you owe'} ${(cents / 100).toFixed(2)} in this group.`,
+    );
+  }
+  if (error.message.includes('not_member')) {
+    throw new Error('You are not a member of this group.');
+  }
+  throw error;
+}
+
 /** Persist updated default split percentages for members of a group. */
 export async function updateMemberSplits(
   groupId: string,

@@ -66,6 +66,10 @@ export default function SignInScreen() {
 
           <Button title="Sign in" onPress={handleSignIn} loading={loading} />
 
+          <Link href="/(auth)/forgot-password" style={styles.forgotLink}>
+            Forgot password?
+          </Link>
+
           <View style={styles.footer}>
             <Text style={styles.footerText}>New here? </Text>
             <Link href="/(auth)/sign-up" style={styles.footerLink}>
@@ -90,4 +94,11 @@ const createStyles = (c: Palette) =>
     footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 8 },
     footerText: { color: c.textSecondary },
     footerLink: { color: c.accent, fontWeight: '700' },
+    forgotLink: {
+      color: c.accent,
+      fontWeight: '600',
+      fontSize: 14,
+      textAlign: 'center',
+      paddingVertical: 4,
+    },
   });

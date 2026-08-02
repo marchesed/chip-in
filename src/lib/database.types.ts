@@ -270,6 +270,10 @@ export interface Database {
         };
         Returns: string;
       };
+      leave_group: {
+        Args: { p_group_id: string };
+        Returns: undefined;
+      };
       delete_my_account: {
         Args: Record<string, never>;
         Returns: undefined;

@@ -54,8 +54,12 @@ function RootNavigator() {
     // The email-confirmation landing must run signed-out — that's the whole
     // point: it's the thing that establishes the session.
     const inAuthCallback = root === 'auth-callback';
+    // Password recovery starts signed-out and then *stays put* once the link
+    // creates a session: that session exists so the user can set a new
+    // password, so bouncing them into (app) would skip the whole point.
+    const inReset = root === 'reset-password';
 
-    if (!session && !inAuthGroup && !inJoin && !inAuthCallback) {
+    if (!session && !inAuthGroup && !inJoin && !inAuthCallback && !inReset) {
       router.replace('/(auth)/sign-in');
     } else if (session && inAuthGroup) {
       router.replace('/(app)');
@@ -101,6 +105,7 @@ function RootNavigator() {
         <Stack.Screen name="(app)" />
         <Stack.Screen name="join/[token]" />
         <Stack.Screen name="auth-callback" />
+        <Stack.Screen name="reset-password" />
       </Stack>
     </NavigationThemeProvider>
   );

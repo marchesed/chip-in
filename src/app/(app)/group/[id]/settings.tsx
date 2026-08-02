@@ -14,14 +14,19 @@ import {
 
 import { Button } from '@/components/form';
 import { GroupAvatar } from '@/components/group-avatar';
+import { getGroupBalances } from '@/lib/api/balances';
 import {
   getGroup,
+  leaveGroup,
   removeGroupImage,
   updateMemberSplits,
   uploadGroupImage,
   type GroupDetail,
 } from '@/lib/api/groups';
+import { useAuth } from '@/lib/auth';
 import { capitalize } from '@/lib/format';
+import { formatCents } from '@/lib/money';
+import { clearRecentGroup } from '@/lib/quickActions';
 import { evenSplit, validateSplits } from '@/lib/splits';
 import type { Palette } from '@/lib/theme';
 import { useTheme, useThemedStyles } from '@/lib/theme-context';
@@ -31,6 +36,7 @@ export default function GroupSettingsScreen() {
   const router = useRouter();
   const styles = useThemedStyles(createStyles);
   const { colors } = useTheme();
+  const { session } = useAuth();
 
   const [group, setGroup] = useState<GroupDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -40,6 +46,40 @@ export default function GroupSettingsScreen() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  // The caller's own net, so the screen can explain *why* leaving is blocked
+  // rather than only failing when they tap it.
+  const [net, setNet] = useState(0);
+
+  function handleLeave() {
+    if (!id || !group) return;
+    const soleMember = group.members.length === 1;
+    Alert.alert(
+      soleMember ? 'Leave and delete this group?' : 'Leave this group?',
+      soleMember
+        ? 'You are the only member, so the group and all of its expense history will be permanently deleted.'
+        : 'You will lose access to this group. Expenses you were part of stay behind for the other members.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: soleMember ? 'Delete group' : 'Leave',
+          style: 'destructive',
+          onPress: async () => {
+            setLeaving(true);
+            setError(null);
+            try {
+              await leaveGroup(id);
+              await clearRecentGroup();
+              router.replace('/(app)');
+            } catch (e) {
+              setError(e instanceof Error ? e.message : 'Could not leave group.');
+              setLeaving(false);
+            }
+          },
+        },
+      ],
+    );
+  }
 
   async function handlePickImage() {
     setError(null);
@@ -106,8 +146,12 @@ export default function GroupSettingsScreen() {
   const load = useCallback(async () => {
     if (!id) return;
     try {
-      const detail = await getGroup(id);
+      const [detail, balances] = await Promise.all([
+        getGroup(id),
+        getGroupBalances(id),
+      ]);
       setGroup(detail);
+      setNet(balances.find((b) => b.userId === session?.user.id)?.netCents ?? 0);
       setPercents(
         Object.fromEntries(
           detail.members.map((m) => [m.user_id, String(m.default_split_percent)]),
@@ -118,7 +162,7 @@ export default function GroupSettingsScreen() {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, session?.user.id]);
 
   useFocusEffect(
     useCallback(() => {
@@ -290,6 +334,37 @@ export default function GroupSettingsScreen() {
           disabled={!validation.valid}
         />
       </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Leave group</Text>
+        <Text style={styles.sectionHint}>
+          {net === 0
+            ? group.members.length === 1
+              ? "You're the only member, so the group and its history will be deleted."
+              : 'Your past expenses stay with the group.'
+            : `You need to settle up first — ${
+                net > 0 ? "you're owed" : 'you owe'
+              } ${formatCents(Math.abs(net), group.currency)}.`}
+        </Text>
+        <Pressable
+          onPress={handleLeave}
+          disabled={leaving || net !== 0}
+          style={({ pressed }) => [
+            styles.leaveBtn,
+            (pressed || leaving) && { opacity: 0.6 },
+            net !== 0 && styles.leaveBtnDisabled,
+          ]}>
+          {leaving ? (
+            <ActivityIndicator color={colors.negative} />
+          ) : (
+            <Text
+              style={[styles.leaveText, net !== 0 && styles.leaveTextDisabled]}
+              suppressHighlighting>
+              {group.members.length === 1 ? 'Leave and delete group' : 'Leave group'}
+            </Text>
+          )}
+        </Pressable>
+      </View>
     </ScrollView>
   );
 }
@@ -325,6 +400,19 @@ const createStyles = (c: Palette) =>
     photoActions: { flexDirection: 'row', gap: 20, marginTop: 2 },
     photoAction: { color: c.accent, fontWeight: '700', fontSize: 14 },
     photoActionDanger: { color: c.negative },
+    leaveBtn: {
+      borderRadius: 10,
+      paddingVertical: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 50,
+      borderWidth: 1,
+      borderColor: c.negativeBorder,
+      backgroundColor: c.surface,
+    },
+    leaveBtnDisabled: { borderColor: c.border, opacity: 0.6 },
+    leaveText: { color: c.negative, fontSize: 16, fontWeight: '700' },
+    leaveTextDisabled: { color: c.textDisabled },
     sectionTitle: { fontSize: 18, fontWeight: '800', color: c.text },
     sectionHint: { fontSize: 13, color: c.textSecondary, marginTop: -4 },
     meta: { fontSize: 14, color: c.textSecondary },

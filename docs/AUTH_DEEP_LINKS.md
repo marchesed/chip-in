@@ -6,6 +6,7 @@ Two deep links matter in ChipIn:
 |---|---|---|
 | `chipin:///join/<token>` | `src/app/join/[token].tsx` | Invite → join a group |
 | `chipin:///auth-callback?code=…` | `src/app/auth-callback.tsx` | Email confirmation lands here |
+| `chipin:///reset-password?code=…` | `src/app/reset-password.tsx` | Password recovery lands here |
 
 Both are generated with `Linking.createURL(path, { isTripleSlashed: true })`.
 
@@ -60,6 +61,26 @@ the app — no edit needed. If a template hardcodes `{{ .SiteURL }}`, swap it fo
    redeemed → user lands in the group.
 
 The client is set to `flowType: 'pkce'` (recommended for mobile).
+
+## Password reset
+
+1. Sign in → "Forgot password?" → `(auth)/forgot-password` collects the email.
+2. `resetPasswordForEmail()` with `redirectTo: chipin:///reset-password`.
+   A **separate route** rather than a marker param on `auth-callback`: it makes
+   recovery unambiguous without depending on Supabase preserving extra query
+   params through its redirect.
+3. The link establishes a short-lived session — that session is the authority to
+   change the password, so `reset-password` waits for the exchange to succeed
+   before showing the form.
+4. `updateUser({ password })`, then straight into the app.
+
+The root gate has to let `reset-password` through **both** signed-out (before the
+exchange) and signed-in (after it). Without the second case the recovery session
+would immediately bounce the user into `(app)`, skipping the entire point.
+
+Supabase returns 200 for unknown addresses as well as real ones, so the request
+screen can't be used to discover who has an account. The confirmation copy says
+"if an account exists" to match.
 
 ## Known limitation: PKCE is device-bound
 

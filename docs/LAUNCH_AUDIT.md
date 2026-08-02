@@ -24,12 +24,11 @@ Auth → URL Configuration:
 A redirect not on the allow-list is silently replaced with the Site URL, which
 is the usual reason a "fixed" redirect still goes to the wrong place.
 
-### 3. No password reset
-There is no forgot-password flow. A tester who forgets their password is locked
-out permanently with no self-service recovery — a guaranteed support request and
-a bad first impression. Needs `supabase.auth.resetPasswordForEmail()`, a request
-screen, and a set-new-password screen wired to the existing `auth-callback`
-route (which already handles recovery-type deep links).
+### 3. ~~No password reset~~ — DONE
+"Forgot password?" on sign-in → email → `chipin:///reset-password` → set a new
+one. See docs/AUTH_DEEP_LINKS.md. Note this depends on blocker #2: without the
+redirect URLs configured, the reset email lands on localhost like every other
+auth link.
 
 ### 4. No privacy policy
 Required by Apple for external TestFlight distribution. Must disclose what is
@@ -49,10 +48,36 @@ Push notifications send from Postgres via `pg_net`. If the extension didn't
 create itself, notifications silently never send (the trigger swallows errors by
 design, so nothing surfaces). Check Database → Extensions.
 
-### 7. No way to leave or delete a group
-The RLS policies allow both (a member may delete their own membership; the
-creator may delete the group) but **no UI exposes either**. A tester who joins
-the wrong group is stuck with it permanently.
+### 7. ~~No way to leave a group~~ — DONE
+"Leave group" on group settings, gated on being settled up (see below for why).
+The last member leaving deletes the group and its history.
+
+### 7b. ~~Departures can unbalance a group~~ — FIXED (0017)
+`group_balances` is derived FROM `group_members`, so removing a membership row
+erases that person from the group's accounting while their expenses remain.
+Measured on a balanced group:
+
+    before: A +2000, B -2000   (sum 0)
+    after:  B -2000            (sum -2000)
+
+B owes money to nobody, and simplification emits no transfer because there is no
+creditor left — so B can never settle.
+
+`leave_group` avoids this by refusing while the caller's net is non-zero.
+**`delete_my_account` (M8) still has the hole**, and cannot use the same guard:
+Apple requires account deletion to work, so it can't be blocked on a balance.
+
+`group_balances` is now driven by everyone with financial history in the group
+(members ∪ payers ∪ share-holders ∪ settlement parties) rather than by current
+membership, so a departure never erases anyone's position. `settlements` insert
+was relaxed in step with it — the caller must still be a member, but the two
+parties only need to be participants, otherwise a debt owed to someone who
+deleted their account could never be cleared.
+
+Verified: A deletes their account while owed $20 → the group still sums to zero,
+B still sees the debt (as "Deleted user"), and B can settle it. Plus regressions
+across zero state, three-way splits, settlements, duplicate rows, outsider
+isolation, and leave_group's settled-up rule.
 
 ### 8. Test accounts still in the project
 Dozens of `chipin-*`, `audit-*`, `dbg*`, `bal-*`, `dm3-*` users from smoke

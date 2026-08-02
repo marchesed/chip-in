@@ -22,3 +22,27 @@ export async function getGroupBalances(groupId: string): Promise<Balance[]> {
     netCents: row.net_cents ?? 0,
   }));
 }
+
+/**
+ * Names for people who appear in a group's balances but not in its roster —
+ * they had expenses here and have since left or deleted their account.
+ *
+ * A deleted account is readable (its profile holds no personal data by then) and
+ * comes back as "Deleted user". Someone who merely left is not readable, since
+ * you no longer share a group; the caller falls back to a generic label.
+ */
+export async function getFormerParticipantNames(
+  userIds: string[],
+): Promise<Record<string, string>> {
+  if (userIds.length === 0) return {};
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, name, email')
+    .in('id', userIds);
+
+  if (error || !data) return {};
+  return Object.fromEntries(
+    data.map((p) => [p.id, p.name || p.email || 'Former member']),
+  );
+}

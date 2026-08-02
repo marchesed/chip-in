@@ -5,7 +5,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/form';
-import { supabase } from '@/lib/supabase';
+import { establishSessionFromUrl } from '@/lib/authLink';
 import type { Palette } from '@/lib/theme';
 import { useTheme, useThemedStyles } from '@/lib/theme-context';
 
@@ -32,44 +32,13 @@ export default function AuthCallbackScreen() {
     handled.current = true;
 
     (async () => {
-      const parsed = Linking.parse(url);
-      const qp = (parsed.queryParams ?? {}) as Record<string, string | undefined>;
-
-      // Fragment params (implicit flow) aren't part of queryParams — parse by hand.
-      const fragment = url.includes('#') ? url.slice(url.indexOf('#') + 1) : '';
-      const frag = Object.fromEntries(new URLSearchParams(fragment)) as Record<
-        string,
-        string | undefined
-      >;
-
-      const errDescription = qp.error_description ?? frag.error_description;
-      const errCode = qp.error ?? frag.error;
-      if (errDescription || errCode) {
-        setError(decodeURIComponent(errDescription ?? errCode ?? 'Link is invalid.'));
+      const failure = await establishSessionFromUrl(url);
+      if (failure) {
+        setError(failure);
         return;
       }
-
-      try {
-        if (qp.code) {
-          const { error } = await supabase.auth.exchangeCodeForSession(qp.code);
-          if (error) throw error;
-        } else if (frag.access_token && frag.refresh_token) {
-          const { error } = await supabase.auth.setSession({
-            access_token: frag.access_token,
-            refresh_token: frag.refresh_token,
-          });
-          if (error) throw error;
-        } else {
-          setError('This confirmation link is missing its sign-in code.');
-          return;
-        }
-        // Session is set; the root gate redirects into (app).
-        router.replace('/(app)');
-      } catch (e) {
-        setError(
-          e instanceof Error ? e.message : 'Could not complete sign-in from this link.',
-        );
-      }
+      // Session is set; the root gate redirects into (app).
+      router.replace('/(app)');
     })();
   }, [url, router]);
 
