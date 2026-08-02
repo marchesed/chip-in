@@ -1,34 +1,47 @@
 {
   "name": "chip-in",
   "main": "expo-router/entry",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "dependencies": {
     "@expo/ui": "~57.0.7",
-    "expo": "~57.0.7",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@supabase/supabase-js": "^2.110.7",
+    "base64-arraybuffer": "^1.0.2",
+    "expo": "~57.0.8",
+    "expo-clipboard": "~57.0.1",
     "expo-constants": "~57.0.6",
+    "expo-dev-client": "~57.0.9",
     "expo-device": "~57.0.1",
     "expo-font": "~57.0.1",
     "expo-glass-effect": "~57.0.1",
     "expo-image": "~57.0.1",
-    "expo-linking": "~57.0.3",
-    "expo-router": "~57.0.7",
-    "expo-splash-screen": "~57.0.4",
+    "expo-image-picker": "~57.0.6",
+    "expo-linking": "~57.0.4",
+    "expo-notifications": "~57.0.7",
+    "expo-quick-actions": "^6.0.2",
+    "expo-router": "~57.0.8",
+    "expo-splash-screen": "~57.0.5",
     "expo-status-bar": "~57.0.1",
     "expo-symbols": "~57.0.1",
     "expo-system-ui": "~57.0.1",
-    "expo-web-browser": "~57.0.1",
+    "expo-web-browser": "~57.0.2",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.86.0",
     "react-native-gesture-handler": "~2.32.0",
+    "react-native-qrcode-svg": "^6.3.21",
     "react-native-reanimated": "4.5.0",
     "react-native-safe-area-context": "~5.7.0",
-    "react-native-screens": "4.25.2",
+    "react-native-screens": "~4.26.0",
+    "react-native-svg": "15.15.4",
+    "react-native-url-polyfill": "^4.0.0",
     "react-native-web": "~0.21.0",
     "react-native-worklets": "0.10.0"
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~57.0.0",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -37,7 +50,16 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "test": "node --test \"src/lib/**/*.test.ts\"",
+    "build:prod": "eas build --profile production --platform ios",
+    "submit:prod": "eas submit --profile production --platform ios --latest",
+    "build:dev": "eas build --profile development --platform ios",
+    "start:dev": "npx expo start --dev-client"
   },
-  "private": true
+  "private": true,
+  "//overrides": "expo-quick-actions@6.0.2 bundles @expo/require-utils@55.x, whose optional typescript peer is capped at ^5 and so conflicts with the SDK 57 template's typescript ~6.0.3. npm 11 skips the optional peer; the older npm on EAS build images tries to resolve it and then fails `npm ci` with 'Missing: typescript@5.9.3 from lock file'. Pinning to the 57.x line the rest of the project already uses removes the duplicate and the stale peer range with it.",
+  "overrides": {
+    "@expo/require-utils": "^57.0.4"
+  }
 }

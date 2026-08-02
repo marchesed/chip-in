@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "chip-in",
+    "name": "ChipIn",
     "slug": "chip-in",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,7 +8,11 @@
     "scheme": "chipin",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/images/icon-ios.png",
+      "bundleIdentifier": "com.dmarchese.chipin",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -25,18 +29,34 @@
     },
     "plugins": [
       "expo-router",
+      "expo-notifications",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "ChipIn uses your photos so you can set a picture for a group."
+        }
+      ],
       [
         "expo-splash-screen",
         {
           "backgroundColor": "#208AEF",
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "image": "./assets/images/splash.png",
+          "resizeMode": "cover",
+          "enableFullScreenImage_legacy": true
         }
-      ]
+      ],
+      "expo-quick-actions",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "d456db51-102c-4f90-83c2-359a0a140317"
+      }
     }
   }
 }
