@@ -37,11 +37,10 @@ Served by GitHub Pages from `docs/` in this repo. Written from the actual schema
 and describes current behaviour — **it states there is no analytics or crash
 reporting, so it must be updated if #9 is ever added.**
 
-### 5. The whole app is uncommitted
-`git log` shows a single "Initial commit" (the bare Expo scaffold). Every
-feature — all of `src/lib`, `src/app/(app)`, `supabase/`, `eas.json` — is
-untracked or modified. There is no history, no rollback point, and EAS builds
-from git state. Commit before building again.
+### 5. ~~The whole app is uncommitted~~ — DONE
+Committed and pushed to https://github.com/marchesed/chip-in — the app, the
+migrations, and these notes. `.env` stayed out; only the publishable key is in
+the repo, in `eas.json`.
 
 ## Should fix before strangers use it
 
