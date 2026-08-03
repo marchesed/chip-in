@@ -6,23 +6,24 @@ External TestFlight is a higher bar than internal: it needs **Beta App Review**
 
 ## Blockers
 
-### 1. "Confirm email" is OFF — verified live
-A signup right now returns a session immediately, which means **anyone can
-register with an email address they do not own**. Fine while smoke-testing;
-not fine with strangers. Turn it on: Auth → Providers → Email → Confirm email.
+### 1. "Confirm email" is OFF — STILL OPEN (re-verified 3 Aug 2026)
+A signup right now still returns a session immediately, so **anyone can register
+with an email address they do not own**. This is the last blocker.
 
-**Order matters — do #2 first.** Turning confirmation on while the redirect URLs
-are unset sends every new tester a confirmation link that lands on
-`http://localhost:3000` and dead-ends. That combination is worse than either
-setting alone.
+It was switched off repeatedly to run smoke tests (they provision throwaway users
+via `signUp` and need the session back), and has not been switched on since.
+Turn it on: Auth → Providers → Email → Confirm email.
 
-### 2. Supabase redirect URLs are unset
-Auth → URL Configuration:
-- **Site URL** → `chipin://auth-callback`
-- **Redirect URLs** → add `chipin://**`
+Its dependency (#2) is now satisfied, so enabling it is safe — confirmation links
+will reach the app instead of localhost.
 
-A redirect not on the allow-list is silently replaced with the Site URL, which
-is the usual reason a "fixed" redirect still goes to the wrong place.
+Verify with a signup probe: if `access_token` comes back, it is still off.
+
+### 2. ~~Supabase redirect URLs~~ — DONE
+Site URL `chipin://auth-callback`, redirect allow-list `chipin://**`.
+Cannot be verified remotely (the setting isn't exposed by the API); confirmed by
+the project owner. First real proof will be a confirmation or reset email
+actually opening the app.
 
 ### 3. ~~No password reset~~ — DONE
 "Forgot password?" on sign-in → email → `chipin:///reset-password` → set a new
@@ -30,10 +31,13 @@ one. See notes/AUTH_DEEP_LINKS.md. Note this depends on blocker #2: without the
 redirect URLs configured, the reset email lands on localhost like every other
 auth link.
 
-### 4. No privacy policy
-Required by Apple for external TestFlight distribution. Must disclose what is
-collected: email, name, optional phone, group photos, and expense
-descriptions/amounts — all linked to the user's identity.
+### 4. ~~No privacy policy~~ — DONE
+Live and returning 200:
+**https://marchesed.github.io/chip-in/privacy.html**
+
+Served by GitHub Pages from `docs/` in this repo. Written from the actual schema,
+and describes current behaviour — **it states there is no analytics or crash
+reporting, so it must be updated if #9 is ever added.**
 
 ### 5. The whole app is uncommitted
 `git log` shows a single "Initial commit" (the bare Expo scaffold). Every
