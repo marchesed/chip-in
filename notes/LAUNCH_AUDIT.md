@@ -4,20 +4,18 @@ Audited against the state of the repo and the live Supabase project.
 External TestFlight is a higher bar than internal: it needs **Beta App Review**
 (~24h) and a **privacy policy URL**.
 
-## Blockers
+## Blockers — all clear
 
-### 1. "Confirm email" is OFF — STILL OPEN (re-verified 3 Aug 2026)
-A signup right now still returns a session immediately, so **anyone can register
-with an email address they do not own**. This is the last blocker.
+### 1. ~~"Confirm email" is OFF~~ — DONE (verified 3 Aug 2026)
+Signup now returns `confirmation_sent_at` and no session, and signing in before
+confirming is rejected with `email_not_confirmed`. Both the setting and its
+enforcement were checked.
 
-It was switched off repeatedly to run smoke tests (they provision throwaway users
-via `signUp` and need the session back), and has not been switched on since.
-Turn it on: Auth → Providers → Email → Confirm email.
-
-Its dependency (#2) is now satisfied, so enabling it is safe — confirmation links
-will reach the app instead of localhost.
-
-Verify with a signup probe: if `access_token` comes back, it is still off.
+**This breaks the smoke tests**, which provision throwaway users via `signUp` and
+need the session back — they now exit with a clear message instead. Running them
+again means toggling this off and on, which is exactly the risk that left it off
+for so long. If smoke tests are needed regularly, stand up a separate Supabase
+project for testing rather than touching production auth settings.
 
 ### 2. ~~Supabase redirect URLs~~ — DONE
 Site URL `chipin://auth-callback`, redirect allow-list `chipin://**`.
