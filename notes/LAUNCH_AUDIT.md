@@ -26,7 +26,7 @@ is the usual reason a "fixed" redirect still goes to the wrong place.
 
 ### 3. ~~No password reset~~ — DONE
 "Forgot password?" on sign-in → email → `chipin:///reset-password` → set a new
-one. See docs/AUTH_DEEP_LINKS.md. Note this depends on blocker #2: without the
+one. See notes/AUTH_DEEP_LINKS.md. Note this depends on blocker #2: without the
 redirect URLs configured, the reset email lands on localhost like every other
 auth link.
 

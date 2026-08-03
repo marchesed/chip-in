@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy — ChipIn</title>
+<style>
+  :root {
+    --bg: #f7f8fa; --surface: #ffffff; --text: #111418;
+    --muted: #585e66; --accent: #1971c2; --border: #d2d5da;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0e1116; --surface: #171b22; --text: #f1f4f8;
+      --muted: #aab4c0; --accent: #4da3ff; --border: #39414d;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 2rem 1.25rem 4rem;
+    background: var(--bg); color: var(--text);
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 46rem; margin: 0 auto; }
+  h1 { font-size: 2rem; margin: 0 0 .25rem; }
+  h2 { font-size: 1.2rem; margin: 2.25rem 0 .5rem; }
+  h3 { font-size: 1rem; margin: 1.5rem 0 .35rem; }
+  .updated { color: var(--muted); font-size: .9rem; margin-bottom: 2rem; }
+  a { color: var(--accent); }
+  ul { padding-left: 1.25rem; }
+  li { margin: .35rem 0; }
+  table { border-collapse: collapse; width: 100%; margin: .75rem 0; font-size: .95rem; }
+  th, td { text-align: left; padding: .5rem .6rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { font-weight: 600; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem 1.25rem; margin: 1.25rem 0;
+  }
+  .back { display: inline-block; margin-bottom: 1.5rem; font-size: .95rem; }
+  footer { margin-top: 3rem; color: var(--muted); font-size: .9rem; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="./">&larr; ChipIn</a>
+
+  <h1>Privacy Policy</h1>
+  <p class="updated">Last updated 3 August 2026</p>
+
+  <p>
+    ChipIn is an app for splitting shared costs with the people you actually
+    share them with. This policy explains what it stores, why, and how to get
+    rid of it. It covers the ChipIn iOS app and its backend.
+  </p>
+
+  <h2>What ChipIn collects</h2>
+
+  <h3>Your account</h3>
+  <table>
+    <tr><th>Email address</th><td>Used to sign in, confirm your account and reset your password.</td></tr>
+    <tr><th>Display name</th><td>Shown to other members of groups you join.</td></tr>
+    <tr><th>Phone number</th><td>Optional. Only stored if you enter it.</td></tr>
+    <tr><th>Colour theme</th><td>So your chosen appearance follows you across devices.</td></tr>
+  </table>
+
+  <h3>Your groups and spending</h3>
+  <table>
+    <tr><th>Group details</th><td>Name, type, currency, and a photo if you add one.</td></tr>
+    <tr><th>Expenses</th><td>Amount, description, date, who paid, and how it was split.</td></tr>
+    <tr><th>Settlements</th><td>Records of payments between members, to keep balances correct.</td></tr>
+  </table>
+  <p>
+    Everything in a group is visible to the other members of that group, and to
+    nobody else. Expense descriptions are free text — please don't put anything
+    in them you wouldn't want your group to read.
+  </p>
+
+  <h3>Your device</h3>
+  <table>
+    <tr><th>Push token</th><td>Only if you allow notifications. Used to tell you when someone adds an expense.</td></tr>
+  </table>
+
+  <p>
+    ChipIn has no advertising, no analytics or tracking SDKs, and no third-party
+    profiling. Nothing is sold or shared for marketing.
+  </p>
+
+  <h2>Who else processes it</h2>
+  <ul>
+    <li><strong>Supabase</strong> — hosts the database, authentication, and group photos.</li>
+    <li><strong>Expo push notification service</strong> — delivers notifications; receives your device token and the notification text.</li>
+    <li><strong>Apple</strong> — distributes the app via TestFlight and the App Store.</li>
+  </ul>
+  <p>These providers process data to run the service, not for their own purposes.</p>
+
+  <h2>How it's protected</h2>
+  <ul>
+    <li>All traffic is encrypted in transit (HTTPS).</li>
+    <li>Database access is enforced per-row: you can only read data for groups you belong to.</li>
+    <li>Group photos are kept in private storage and served through short-lived signed links, so they aren't publicly reachable.</li>
+  </ul>
+
+  <h2>Deleting your account</h2>
+  <div class="card">
+    <p>
+      You can delete your account at any time from <strong>Profile &rarr; Delete
+      account</strong>. No email required.
+    </p>
+    <p><strong>What is deleted:</strong> your name, email, phone, profile,
+    group memberships, and notification tokens. Your login stops working
+    immediately. Groups left with no members are deleted entirely, along with
+    their history.</p>
+    <p><strong>What is kept:</strong> expenses you were part of stay in their
+    groups, attributed to <em>“Deleted user”</em>. This is deliberate — other
+    members' balances are calculated from those expenses, so deleting them would
+    make everyone else's totals wrong. The retained records contain no personal
+    details about you.</p>
+  </div>
+
+  <h2>Your rights</h2>
+  <p>
+    Depending on where you live, you may have rights to access, correct, export,
+    or delete your personal information, and to complain to a data protection
+    authority. Deletion and correction are built into the app; for anything else,
+    get in touch.
+  </p>
+
+  <h2>Children</h2>
+  <p>ChipIn isn't directed at children under 13, and isn't knowingly used by them.</p>
+
+  <h2>Changes</h2>
+  <p>
+    If this policy changes, the date at the top changes with it. Material changes
+    will be announced in the app.
+  </p>
+
+  <h2>Contact</h2>
+  <p>
+    Questions about this policy or your data:
+    <a href="mailto:marchesedb@gmail.com">marchesedb@gmail.com</a>
+  </p>
+
+  <footer>ChipIn</footer>
+</main>
+</body>
+</html>
